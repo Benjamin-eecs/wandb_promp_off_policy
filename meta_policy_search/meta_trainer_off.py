@@ -203,11 +203,15 @@ class Trainer_off(object):
                 logger.dumpkvs()
 
         logger.log("Training finished")
-        res = np.array(self.sample_processor.test_Step_1_AverageReturn)
+        res      = np.array(self.sample_processor.Step_1_AverageReturn)
+        test_res = np.array(self.sample_processor.test_Step_1_AverageReturn)
+
+        res_dict = dict([('Step_1-AverageReturn',res),
+                         ('test-Step_1-AverageReturn',test_res)])
         self.sess.close()
         tf.reset_default_graph()
-        print(res)  
-        return res      
+         
+        return res_dict      
 
     def get_itr_snapshot(self, itr):
         """

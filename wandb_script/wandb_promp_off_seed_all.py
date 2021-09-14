@@ -57,26 +57,29 @@ def main(tune_config = None):
 
     }
 
-
+    Step_1_AverageReturn      = np.zeros(default_config['n_itr'])        
     test_Step_1_AverageReturn = np.zeros(default_config['n_itr'])        
 
+    sweep_run = wandb.init(config=tune_config)
 
-    with wandb.init(config=tune_config):
-
+    with sweep_run:
         for seed in range(5):
             default_config.update(wandb.config)
             default_config.update({'seed':seed})
             print(default_config)
 
+            dump_path = meta_policy_search_path + '/data/pro-mp/test_%d_seed_%d' % (sweep_run.name, default_config['seed'])
+            # configure logger
+            logger.configure(dir=dump_path, format_strs=['stdout', 'log', 'csv'],
+                             snapshot_mode='last_gap')
+            # dump run configuration before starting training
+            json.dump(default_config, open(dump_path + '/params.json', 'w'), cls=ClassEncoder)
+
 
             set_seed(default_config['seed'])
-
             baseline =  globals()[default_config['baseline']]()    # instantiate baseline
-
             env = globals()[default_config['env']](default_config['seed']) # instantiate env
-
             env = normalize(env)                           # apply normalize wrapper to env
- 
             policy          = MetaGaussianMLPPolicy(
                     name                  = "meta-policy",
                     obs_dim               = np.prod(env.observation_space.shape),
@@ -84,7 +87,6 @@ def main(tune_config = None):
                     meta_batch_size       = default_config['meta_batch_size'],
                     hidden_sizes          = default_config['hidden_sizes'],
                 )
-
             sampler         = MetaSampler_off(
                 env                       =  env,
                 policy                    =  policy,
@@ -96,14 +98,12 @@ def main(tune_config = None):
                 discount                  =  default_config['discount'],
                 num_tasks                 =  default_config['num_tasks']
             )
-
             sample_processor = MetaSampleProcessor_off(
                 baseline                  =  baseline,
                 discount                  =  default_config['discount'],
                 gae_lambda                =  default_config['gae_lambda'],
                 normalize_adv             =  default_config['normalize_adv'],
             )
-
             algo             = ProMP_off(
                 policy                    =  policy,
                 inner_lr                  =  default_config['inner_lr'],
@@ -120,7 +120,6 @@ def main(tune_config = None):
                 clip_style                =  default_config['clip_style']                 #0:TRPO 1:off policy pg
 
             )
-
             trainer = Trainer_off(
                 algo                      =  algo,
                 policy                    =  policy,
@@ -134,9 +133,10 @@ def main(tune_config = None):
                 
             )
 
-            res                           = trainer.train()
+            res_dict                      = trainer.train()
 
-            test_Step_1_AverageReturn     = test_Step_1_AverageReturn + np.array(res)
+            Step_1_AverageReturn          = Step_1_AverageReturn      + np.array(res_dict['Step_1-AverageReturn'])
+            test_Step_1_AverageReturn     = test_Step_1_AverageReturn + np.array(res_dict['test-Step_1-AverageReturn'])
 
             del baseline
             del env
@@ -146,9 +146,10 @@ def main(tune_config = None):
             del algo
             del trainer
 
+        Step_1_AverageReturn      = Step_1_AverageReturn      / 5
         test_Step_1_AverageReturn = test_Step_1_AverageReturn / 5
         for itr in range(default_config['n_itr']):
-            wandb.log({'test-Step_1-AverageReturn':test_Step_1_AverageReturn[itr]})
+            wandb.log({'test-Step_1-AverageReturn':test_Step_1_AverageReturn[itr], 'test-Step_1-AverageReturn':test_Step_1_AverageReturn[itr]})
 
 
 

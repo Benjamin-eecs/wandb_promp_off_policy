@@ -63,6 +63,7 @@ class SampleProcessor(object):
         self.gae_lambda = gae_lambda
         self.normalize_adv = normalize_adv
         self.positive_adv = positive_adv
+        self.Step_1_AverageReturn      = []
         self.test_Step_1_AverageReturn = []
 
     def process_samples(self, paths, log=False, log_prefix=''):

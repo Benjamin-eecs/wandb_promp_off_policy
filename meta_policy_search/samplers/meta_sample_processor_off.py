@@ -63,6 +63,8 @@ class MetaSampleProcessor_off(SampleProcessor):
 
         if log_prefix == 'test-Step_1-':
             self.test_Step_1_AverageReturn.append(undiscounted_returns_mean)
+        elif log_prefix == 'Step_1-':
+            self.Step_1_AverageReturn.append(undiscounted_returns_mean)
         return samples_data_meta_batch, off_policy_samples_data_meta_batch
 
 

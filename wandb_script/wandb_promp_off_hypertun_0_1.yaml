@@ -1,16 +1,19 @@
-program: promp_off_wandb_iterative.py
+program: wandb_promp_off_seed.py
+project: quick_search
 method: grid
 metric:
   goal: maximize
   name: test-Step_1-AverageReturn
 parameters:
+  seed:
+    values: [1]
   buffer_length:
-    values: [4000, 8000, 16000, 32000, 64000]
+    values: [4000, 8000]
   sample_batch_size:
-    values: [40, 80, 160, 320, 640]
+    values: [40, 80]
   clip_style:
-    values: [0, 1]
+    values: [0]
   off_clip_eps_upper:
-    values: [0.6, 1, 2, 4, 8]
+    values: [0.6, 0.8, 1.0]
   off_clip_eps_lower:
     values: [0.6, 0.8, 1.0]
