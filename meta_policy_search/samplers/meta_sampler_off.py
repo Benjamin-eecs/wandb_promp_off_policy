@@ -92,7 +92,7 @@ class ReplayBuffer(object):
 
 
 
-            self.curr_i[task_ida] = 0
+            self.curr_i[task_id] = 0
             self.filled_i[task_id] = self.buffer_length
 
         self.ob_buffs[task_id][self.curr_i[task_id]:self.curr_i[task_id] + nentries]        = observations
